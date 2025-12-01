@@ -12,7 +12,6 @@ def to_pygame(p, screen):
 class World(object):
     def __init__(self):
         self.objects = []
-        pymunk.init_pymunk()
         space = pymunk.Space()
         space.gravity = (0.0, -900.0)
         self.space = space
