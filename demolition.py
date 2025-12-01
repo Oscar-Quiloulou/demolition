@@ -12,14 +12,15 @@ def main():
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("blocks.")
     clock = pygame.time.Clock()
+    
     world = World()
+    
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <level_file>")
+        return 1
     world.load_level(sys.argv[1])
 
-    #def handle_collision(space, arbiter):
-    #    if target.contour not in arbiter.shapes:
-    #        return
-    #    print "OUCH"
-    #space.set_default_collision_handler(None, None, None, handle_collision)
+    mpos = None  # Initialisation pour éviter NameError
 
     running = True
     while running:
@@ -28,27 +29,30 @@ def main():
                 running = False
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
-            elif event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    mpos = pygame.mouse.get_pos()
-                    mpos = mpos[0], screen.get_height() - mpos[1]
-                    pygame.mouse.get_rel()
-            elif event.type == MOUSEBUTTONUP:
-                if event.button == 1:
-                    ball = Ball(world.space, *mpos, radius=20)
-                    rel = pygame.mouse.get_rel()
-                    rel = rel[0] * 2, -rel[1] * 2
-                    world.append(ball)
-                    ball.apply_impulse(*rel)
+            elif event.type == MOUSEBUTTONDOWN and event.button == 1:
+                mpos = pygame.mouse.get_pos()
+                mpos = mpos[0], screen.get_height() - mpos[1]
+                pygame.mouse.get_rel()  # Reset relative movement
+            elif event.type == MOUSEBUTTONUP and event.button == 1 and mpos is not None:
+                ball = Ball(world.space, *mpos, radius=20)
+                rel = pygame.mouse.get_rel()
+                rel = rel[0] * 2, -rel[1] * 2
+                world.append(ball)
+                ball.apply_impulse(*rel)
+                mpos = None  # Réinitialiser pour éviter réutilisation
 
         screen.fill(THECOLORS["white"])
 
-        world.space.step(1/200.0)
+        # Step physics
+        world.space.step(1/120.0)  # 120 FPS plus raisonnable
 
+        # Draw everything
         world.draw(screen)
 
         pygame.display.flip()
-        clock.tick(200)
+        clock.tick(120)
+
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main())
